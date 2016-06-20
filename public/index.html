@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <title>NodeJS Starter Application - Google Map + Data.gov.sg</title>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" href="/ico/favicon.ico">
+    <link rel="stylesheet" href="stylesheets/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.11.4/jquery-ui.css">
+      <style>
+      #input {
+        height: 50px;
+      }
+      #map {
+        height: 100%;
+        width: 100%;
+      }
+    </style>
+    <script type="text/javascript" src="/js/jquery-1.11.1.min.js"></script>
+    
+  </head>
+
+  <body>
+  <div id="input">
+    <p style="text-align: center">Data Gov Resource URL: <input id="url" name="url" size="100" type="text"/>
+    <button onclick="javascript: processURL()"/>Process</button>
+  </p>
+  </div>
+  <div id="map"></div>
+  <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCezYDFrJ5zCUKyknUM2vHHZKgfcplRCTI">
+  </script>
+  <script>
+
+      var map = new google.maps.Map(document.getElementById('map'), {
+        zoom: 12,
+        center: {lat: 1.3521, lng: 103.8198}
+      });
+
+      var ctaLayer = new google.maps.KmlLayer(null);
+
+      $(document).ready(function () {
+        $('#url').val('https://geo.data.gov.sg/communityclubs/2016/05/30/kml/communityclubs.zip');
+      });
+
+
+      function processURL() {
+        $.ajax({
+          type: 'GET',
+          url: '/file?url='+$('#url').val(),
+          success: function(data) {
+            console.log('File '+data);
+            extract(data);
+
+            //ctaLayer = new google.maps.KmlLayer(null);
+            ctaLayer.setMap(null);
+
+            ctaLayer = new google.maps.KmlLayer({
+              url: 'http://hdb-hack-dataset.mybluemix.net/rendermap?file='+data,
+              map: map
+            });
+
+          },
+          error: function(err) {
+            console.error(JSON.stringify(err));
+          }
+
+        });
+      }
+
+      function extract(data) {
+          $.ajax({
+          type: 'GET',
+          url: 'http://hdb-hack-dataset.mybluemix.net/extract?file='+data,
+          success: function(res) {
+            console.log('Extract Successfully');
+          },
+          error: function(err) {
+            console.error(JSON.stringify(err));
+          }
+        });
+      }
+
+    </script>
+  </body>
+</html>
